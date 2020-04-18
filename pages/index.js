@@ -1,49 +1,86 @@
 import Head from 'next/head'
+import {firestore} from '../components/Firebase/firebase.js';
+import { useState, useEffect } from 'react';
+import HeartButton from '../components/heartButton.js';
 
-const Home = () => (
+
+export default function Home() {
+  
+  const [heroz, setHeroz] = useState([]);
+  
+  const [hearts, setHearts] = useState(0);
+
+
+
+  const funcCallback = (count, heroObj) => {
+    setHearts(() => count);
+    console.log('printing heroObj in funcCallback');
+    console.log(heroObj);
+    firestore.collection('heroz').doc(heroObj.id).update({
+      hearts: count
+    });
+  }
+
+  useEffect(() => {
+    firestore.collection('heroz').get()
+      .then((snapshot) => {
+        snapshot.forEach((doc) => {
+          //setHeroz([...heroz, doc.data().name]);
+          setHeroz(heroz => [...heroz, doc.data()]);
+          console.log(doc.data());
+          //setHeroz(heroz => heroz.concat(doc));
+          //setHeroz(heroz.push(doc.data().name));
+        });
+      })
+      .catch((err) => {
+        console.log('Error getting documents', err);
+    });
+  }, []);
+  
+  
+
+  return (
   <div className="container">
     <Head>
       <title>Create Next App</title>
       <link rel="icon" href="/favicon.ico" />
+      <link
+        rel="stylesheet"
+        href="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+        integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh"
+        crossorigin="anonymous"
+      />
+
     </Head>
 
+    
     <main>
+
       <h1 className="title">
-        Welcome to <a href="https://nextjs.org">Next.js!</a>
+        We salute 🙏 you heroz 🦸
       </h1>
 
-      <p className="description">
-        Get started by editing <code>pages/index.js</code>
-      </p>
+      <div className="encloser">
 
-      <div className="grid">
-        <a href="https://nextjs.org/docs" className="card">
-          <h3>Documentation &rarr;</h3>
-          <p>Find in-depth information about Next.js features and API.</p>
-        </a>
-
-        <a href="https://nextjs.org/learn" className="card">
-          <h3>Learn &rarr;</h3>
-          <p>Learn about Next.js in an interactive course with quizzes!</p>
-        </a>
-
-        <a
-          href="https://github.com/zeit/next.js/tree/master/examples"
-          className="card"
-        >
-          <h3>Examples &rarr;</h3>
-          <p>Discover and deploy boilerplate example Next.js projects.</p>
-        </a>
-
-        <a
-          href="https://zeit.co/import?filter=next.js&utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-          className="card"
-        >
-          <h3>Deploy &rarr;</h3>
-          <p>
-            Instantly deploy your Next.js site to a public URL with ZEIT Now.
-          </p>
-        </a>
+      {Object.keys(heroz).map((hero, id) => (
+        <div key={id} className="row">
+          <div className="col">
+            <div className="card">
+              <div className="name">🦸 <span className="field">{heroz[hero].name}</span></div>
+              <div className="superpower">🔧 <span className="field">{heroz[hero].superpower}</span></div>
+              <div className="location">📍 <span className="field">{heroz[hero].location}</span></div>
+              <div className="div-btn">
+                <span>
+                  <a href={heroz[hero].link} className="btn btn-primary btn-sm">Read More >></a>
+                </span>
+                <span>
+                  <HeartButton parentCallback={funcCallback} heroObject={heroz[hero]} className="hrt">{hearts}</HeartButton>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      ))}
       </div>
     </main>
 
@@ -53,7 +90,6 @@ const Home = () => (
         target="_blank"
         rel="noopener noreferrer"
       >
-        Powered by <img src="/zeit.svg" alt="ZEIT Logo" />
       </a>
     </footer>
 
@@ -63,7 +99,6 @@ const Home = () => (
         padding: 0 0.5rem;
         display: flex;
         flex-direction: column;
-        justify-content: center;
         align-items: center;
       }
 
@@ -72,8 +107,8 @@ const Home = () => (
         flex: 1;
         display: flex;
         flex-direction: column;
-        justify-content: center;
         align-items: center;
+        width: 100%;
       }
 
       footer {
@@ -112,9 +147,9 @@ const Home = () => (
       }
 
       .title {
-        margin: 0;
         line-height: 1.15;
-        font-size: 4rem;
+        font-size: 2rem;
+        margin-bottom: 4%;
       }
 
       .title,
@@ -122,9 +157,42 @@ const Home = () => (
         text-align: center;
       }
 
+      .name {
+        font-size: 1.1rem;
+        font-weight: 600;
+      }
+
+      .location {
+        font-size: 0.9rem;
+      }
+
+      .superpower {
+        font-size: 0.9rem;
+      }
+
       .description {
         line-height: 1.5;
         font-size: 1.5rem;
+      }
+
+      .btn {
+        color: #fff;
+        width: 60%;
+        margin-right: 6%;
+      }
+
+      .div-btn {
+        margin-top: 8%;
+      }
+
+      .hrt {
+        padding-top: 4%;
+        padding-bottom: 4%;
+      }
+
+      .button {
+        padding-top: 4%;
+        padding-bottom: 4%;
       }
 
       code {
@@ -141,21 +209,32 @@ const Home = () => (
         align-items: center;
         justify-content: center;
         flex-wrap: wrap;
-
         max-width: 800px;
         margin-top: 3rem;
       }
 
+
+      .field {
+        margin-left: 2%;
+      }
+
+
+      .row {
+        display: inline-flex;
+        margin: 2% 4%;
+      }
+
       .card {
-        margin: 1rem;
         flex-basis: 45%;
-        padding: 1.5rem;
+        padding: 1rem;
         text-align: left;
         color: inherit;
         text-decoration: none;
         border: 1px solid #eaeaea;
-        border-radius: 10px;
+        border-radius: 6px;
         transition: color 0.15s ease, border-color 0.15s ease;
+        width: 120%;
+        font-size: 1rem;
       }
 
       .card:hover,
@@ -199,5 +278,4 @@ const Home = () => (
     `}</style>
   </div>
 )
-
-export default Home
+}
