@@ -3,7 +3,6 @@ import {firestore} from '../components/Firebase/firebase.js';
 import { useState, useEffect } from 'react';
 import HeartButton from '../components/heartButton.js';
 
-
 export default function Home() {
   
   const [heroz, setHeroz] = useState([]);
